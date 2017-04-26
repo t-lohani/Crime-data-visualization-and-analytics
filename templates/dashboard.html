@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='lib/css/bootstrap.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='lib/css/dc.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='lib/css/keen-dashboards.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="navbar-header">
+			<a class="navbar-brand">Crime Data Dashboard</a>
+		</div>
+
+        <div class="navbar-header">
+			<a class="navbar-brand" href="/crime_analysis/2015">Button</a>
+		</div>
+    </div>
+
+    <div class="container-fluid" id="dashboard_container">
+
+        <div class="row">
+
+            <div class="col-sm-6">
+                <div class="row">
+
+                    <!-- Time Chart -->
+                    <div class="col-sm-12">
+                        <div class="chart-wrapper">
+                            <div class="chart-title">
+                                Number of Murders
+                            </div>
+
+                            <div class="chart-stage">
+                                <div id="time-chart"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Time Chart -->
+
+                    <!-- Victim race Pie -->
+                    <div class="col-sm-6">
+                        <div class="chart-wrapper">
+                            <div class="chart-title">
+                                Solved cases
+                            </div>
+
+                            <div class="chart-stage">
+                                <div id="victim-race-pie-chart" style="transform: translate(15px, 0px)"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Victim race Pie -->
+
+                    <!-- Weapon Row -->
+                    <div class="col-sm-6">
+                        <div class="chart-wrapper">
+                            <div class="chart-title">
+                                Weapon Used
+                            </div>
+
+                            <div class="chart-stage">
+                                <div id="weapon-used-row-chart"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Weapon Row -->
+
+                </div>
+            </div>
+
+            <!-- Map -->
+            <div class="col-sm-6">
+                <div class="chart-wrapper">
+                    <div class="chart-title">
+                        Distribution of Murders
+                    </div>
+
+                    <div class="chart-stage">
+                        <div id="us-chart"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Map -->
+
+            <!-- Metric 1 -->
+            <div class="col-sm-3">
+                <div class="chart-wrapper">
+                    <div class="chart-title">
+                        Number of Murders
+                    </div>
+
+                    <div class="chart-stage">
+                        <div id="murder-count-nd"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Metric 1 -->
+
+            <!-- Metric 2 -->
+            <div class="col-sm-3">
+                <div class="chart-wrapper">
+                    <div class="chart-title">
+                        Solved cases
+                    </div>
+
+                    <div class="chart-stage">
+                        <div id="solved-cases-nd"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Metric 2 -->
+
+            <!-- Race Row -->
+            <div class="col-sm-6">
+                <div class="chart-wrapper">
+                    <div class="chart-title">
+                        Victim Race
+                    </div>
+
+                    <div class="chart-stage">
+                        <div id="victim-race-row-chart"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Race Row -->
+
+        </div>
+
+    </div>
+
+    <script src="{{ url_for('static', filename='lib/js/jquery.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/js/bootstrap.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/js/crossfilter.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/js/d3.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/js/dc.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/js/queue.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/js/keen.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+
+</body>
+</html>
