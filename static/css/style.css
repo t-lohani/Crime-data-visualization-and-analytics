@@ -1,0 +1,47 @@
+.container-fluid {
+		transform: translate(0px, 55px);
+}
+
+.chart-wrapper {
+    border: 2px solid #3d4a57;
+}
+
+.chart-wrapper .chart-title {
+    color: #FFF;
+    background-color: #3d4a57;
+}
+
+.dc-chart g.row text {
+    fill: #000
+}
+
+.dc-chart .pie-slice {
+    fill: #000
+}
+
+.number-display {
+    font-size: 59px
+}
+
+.counties :hover {
+  fill: 'red';
+}
+
+.states {
+  fill: none;
+  stroke: #000;
+  stroke-linejoin: round;
+}
+
+.map_container {
+    transform: translate(0px, 50px);
+}
+
+.navbar-inverse {
+    height: 40px;
+    min-height: 40px;
+}
+
+.navbar-brand {
+    line-height: 10px
+}
