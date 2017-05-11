@@ -40,9 +40,10 @@ Steps to run project:
 
 9. Now go to the location where the .csv file is present. Open cmd at that location and execute command -
 
-mongoimport -d crime_db -c crime_data --type csv --file crime_data_w_population_and_crime_rate_w_fips.csv --headerline
-
-mongoimport -d crime_db -c crime_year --type csv --file Crime_Reports.csv --headerline
+mongoimport -d crime_db -c crime_data_state --type csv --file Crime_Data_State.csv --headerline
+mongoimport -d crime_db -c crime_data_county --type csv --file Crime_Data_County.csv --headerline
+mongoimport -d crime_db -c crime_report --type csv --file Crime_Reports.csv --headerline
+mongoimport -d crime_db -c crime_report --type csv --file Crime_Reports_Decimated.csv --headerline
 
 This will create a database named 'uselections' and a collection named 'election' and insert all the data from the csv file to this collection.
 
