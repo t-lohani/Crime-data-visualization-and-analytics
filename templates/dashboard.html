@@ -6,20 +6,24 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='lib/css/bootstrap.min.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='lib/css/dc.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='lib/css/keen-dashboards.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='lib/css/d3.slider.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='css/style.css') }}">
+
+    <title>CSE 564 Final Project</title>
 </head>
 <body>
-    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
-		<div class="navbar-header">
-			<a class="navbar-brand">Crime Data Dashboard</a>
-		</div>
 
-        <div class="navbar-header">
-			<a class="navbar-brand" href="/crime_analysis/2015">Button</a>
-		</div>
+    <div class="tab">
+      <button class="tablinks" onclick="openTabClick(event, 'dashboard_container', 1)" id="btn_dashboard">Dashboard</button>
+      <button class="tablinks" onclick="openTabClick(event, 'dimension_container', 2)" id="btn_dimensions">Dimensionality</button>
+      <button class="tablinks" onclick="openTabClick(event, 'pcamds_container', 3)" id="btn_pcamds">PCA/MDS</button>
+      <button class="tablinks" onclick="openTabClick(event, 'slider_map_container', 4)" id="btn_mapview_slider">Map</button>
+      <button class="tablinks" onclick="openTabClick(event, 'parallel_container', 5)" id="btn_parallel">Parallel Coordinates</button>
+      <button class="tablinks" onclick="openTabClick(event, 'stack_container', 6)" id="btn_stack">Stack Bar</button>
+      <button class="tablinks" onclick="openTabClick(event, 'bubble_container', 7)" id="btn_bubble">Bubble Chart</button>
     </div>
 
-    <div class="container-fluid" id="dashboard_container">
+    <div class="tabcontent" id="dashboard_container">
 
         <div class="row">
 
@@ -44,7 +48,7 @@
                     <div class="col-sm-6">
                         <div class="chart-wrapper">
                             <div class="chart-title">
-                                Solved cases
+                                Victim Race
                             </div>
 
                             <div class="chart-stage">
@@ -89,7 +93,7 @@
             <div class="col-sm-3">
                 <div class="chart-wrapper">
                     <div class="chart-title">
-                        Number of Murders
+                        Total cases
                     </div>
 
                     <div class="chart-stage">
@@ -113,7 +117,7 @@
             </div>
             <!-- Metric 2 -->
 
-            <!-- Race Row -->
+            <!-- Race Row
             <div class="col-sm-6">
                 <div class="chart-wrapper">
                     <div class="chart-title">
@@ -125,16 +129,64 @@
                     </div>
                 </div>
             </div>
-            <!-- Race Row -->
+             Race Row -->
 
         </div>
 
     </div>
 
+    <div class="tabcontent" id="dimension_container">
+        <svg class="scree_svg" id="scree" width="650" height="550"></svg>
+        <svg class="bar_svg" id="dim_bar" width="650" height="550"></svg>
+    </div>
+
+    <div class="tabcontent" id="pcamds_container">
+        <svg class="pca_svg" id="pca_plot" width="650" height="550"></svg>
+        <svg class="mds_svg" id="mds_plot" width="650" height="550"></svg>
+    </div>
+
+    <div class="tabcontent" id="slider_map_container">
+        <svg class="map_svg" id="map_slide_county" width="960" height="550" display="none"></svg>
+        <svg class="map_svg" id="map_slide_state" width="960" height="550"></svg>
+
+        <div class="radio_container">
+            <form id="mapType" onchange="changeMapType()">
+                <input class="radio" id="county" type="radio" name="maptype" value="county" checked="checked">
+                <label class="radio_text" for="county">County View</label>
+                <input class="radio" id="state" type="radio" name="maptype" value="state">
+                <label class="radio_text" for="state">State View</label>
+            </form>
+        </div>
+    </div>
+
+    <div class="slider_container" id="slider_div">
+        <div class="slider" id="slider1"></div>
+        <div class="slider" id="slider2"></div>
+        <div class="slider" id="slider3"></div>
+        <div class="slider" id="slider4"></div>
+        <div class="slider" id="slider5"></div>
+        <div class="slider" id="slider6"></div>
+        <div class="slider" id="slider7"></div>
+    </div>
+
+    <div class="tabcontent" id="parallel_container">
+        <svg class="parallel_svg" id="parallel" width="1260" height="500"></svg>
+    </div>
+
+    <div class="tabcontent" id="stack_container">
+        <svg class="stack_svg" id="stack" width="940" height="460"></svg>
+    </div>
+
+    <div class="tabcontent" id="bubble_container">
+        <svg class="bubble_svg" id="stack" width="940" height="460"></svg>
+    </div>
+
+    <script src="https://d3js.org/d3.v3.min.js"></script>
+    <script src="https://d3js.org/topojson.v2.min.js"></script>
+    <script src="{{ url_for('static', filename='lib/js/d3.slider.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/js/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/js/bootstrap.min.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/js/crossfilter.js') }}"></script>
-    <script src="{{ url_for('static', filename='lib/js/d3.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/js/dc.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/js/queue.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/js/keen.min.js') }}"></script>
