@@ -137,7 +137,7 @@
         <svg class="map_svg" id="map_slide_state" width="870" height="550"></svg>
         <svg class="radar_svg" id="radar_chart_state" width="300" height="500"></svg>
 
-        <fieldset style="transform: translate(-300px, 40px);">
+        <fieldset style="transform: translate(-300px, 60px);">
             <input type="radio" class="radio" name="maptype" onclick="radioChange()" value="state" id="state_btn" checked="checked" />
             <label for="state_btn">State View</label>
             <input type="radio" class="radio" name="maptype" onclick="radioChange()" value="county" id="county_btn"  />
@@ -155,6 +155,7 @@
 
     <script src="https://d3js.org/d3.v3.min.js"></script>
     <script src="https://d3js.org/topojson.v2.min.js"></script>
+    <script src="http://d3js.org/colorbrewer.v1.min.js"></script>
     <script src="{{ url_for('static', filename='lib/js/d3.slider.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/js/jquery.min.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/js/bootstrap.min.js') }}"></script>

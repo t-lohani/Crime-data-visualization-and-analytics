@@ -44,6 +44,7 @@ div.tab button {
     padding: 10px 16px;
     transition: 0.3s;
     color: white;
+    font-weight: bold;
 }
 
 /* Change background color of buttons on hover */
@@ -253,4 +254,9 @@ input.radio {
 
 .legend-dash {
     font-size: 9px;
+}
+
+.chart_name {
+    font-size: ;
+    font-weight: bold;
 }

@@ -76,6 +76,8 @@ var selectedCountyId;
 var countyId;
 var countyRadarData = [];
 
+var contrast = 'darkred'
+
 queue()
     .defer(d3.json, "/get_squareloadings")
     .defer(d3.json, "/get_eigen_values")
@@ -158,21 +160,21 @@ function initData(error, squareLoadingsJson, eigenValuesJson, pcaDataJson, mdsDa
         }
     });
 
-//    populate_dashboard();
-//    populate_dimension();
-//    populate_intrinsic();
-//    populate_pca();
-//    populate_mds();
+    populate_dashboard();
+    populate_dimension();
+    populate_intrinsic();
+    populate_pca();
+    populate_mds();
     populate_slider_county_map();
     populate_slider_state_map();
-//    populate_parallel();
+    populate_parallel();
     document.getElementById("state_btn").checked = true;
     console.log("Tarun", "Initiating default click")
 //    console.log("Tarun", mdsData)
-//    document.getElementById("btn_dashboard").click();
+    document.getElementById("btn_dashboard").click();
 //    document.getElementById("btn_dimensions").click();
 //    document.getElementById("btn_pcamds").click();
-    document.getElementById("btn_mapview_slider").click();
+//    document.getElementById("btn_mapview_slider").click();
 //    document.getElementById("btn_parallel").click();
 //    document.getElementById("btn_bubble").click();
 }
@@ -183,15 +185,16 @@ function populate_slider_county_map() {
 
     var width = 960;
     var height = 600;
+    var noOfIntervals = 6;
 
 //    console.log("Max crime county", maxCrimeCounty);
 //    console.log("Min crime county", minCrimeCounty);
 
-    var diffCounty = maxCrimeCounty - minCrimeCounty
+    var diffCounty = maxCrimeCounty - minCrimeCounty;
 
     colorCounty = d3.scale.linear()
         .domain([diffCounty/100000, diffCounty/10000, diffCounty/1000, diffCounty/100, diffCounty/10, diffCounty])
-        .range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
+        .range(colorbrewer.Purples[noOfIntervals]);
 
     var path = d3.geo.path();
     var svg = d3.select("#map_slide_county")
@@ -199,7 +202,7 @@ function populate_slider_county_map() {
     var legend_svg = d3.select("#legend_area_county")
 
     var sampleNumerical = [diffCounty/100000, diffCounty/10000, diffCounty/1000, diffCounty/100, diffCounty/10, diffCounty];
-    var sampleThreshold = d3.scale.threshold().domain(sampleNumerical).range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
+    var sampleThreshold = d3.scale.threshold().domain(sampleNumerical).range(colorbrewer.Purples[noOfIntervals]);
     var horizontalLegend = d3.svg.legend().units("Crimes").cellWidth(80).cellHeight(15).inputScale(sampleThreshold).cellStepping(100);
     legend_svg.append("g").attr("class", "legend").call(horizontalLegend);
 
@@ -240,6 +243,7 @@ function populate_slider_state_map() {
 
     var width = 960;
     var height = 600;
+    var noOfIntervals = 6;
 
     console.log("Max crime state", maxCrimeState);
     console.log("Min crime state", minCrimeState);
@@ -249,7 +253,7 @@ function populate_slider_state_map() {
 
     colorState = d3.scale.linear()
         .domain([diffState/100000, diffState/10000, diffState/1000, diffState/100, diffState/10, diffState])
-        .range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
+        .range(colorbrewer.Purples[noOfIntervals]);
 
     var path = d3.geo.path();
     var svg = d3.select("#map_slide_state")
@@ -257,7 +261,7 @@ function populate_slider_state_map() {
     var legend_svg = d3.select("#legend_area_state")
 
     var sampleNumerical = [diffState/100000, diffState/10000, diffState/1000, diffState/100, diffState/10, diffState];
-    var sampleThreshold = d3.scale.threshold().domain(sampleNumerical).range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
+    var sampleThreshold = d3.scale.threshold().domain(sampleNumerical).range(colorbrewer.Purples[noOfIntervals]);
     var horizontalLegend = d3.svg.legend().units("Crimes").cellWidth(80).cellHeight(15).inputScale(sampleThreshold).cellStepping(100);
     legend_svg.append("g").attr("class", "legend").call(horizontalLegend);
 
@@ -346,7 +350,7 @@ function stateClick(d) {
         item ["svg"] = d3.select(this);
         selectedSVGList.push(item)
 
-        active = d3.select(this).style("fill", "orange");
+        active = d3.select(this).style("fill", contrast);
                 //Loop through once for each team data value
          if(state_view)
             pushTeamRadarData(crimeDataState);
@@ -555,7 +559,7 @@ function populate_dashboard() {
                     .attr("class", "x-axis-label")
                     .attr("text-anchor", "middle")
                     .attr("x", chartToUpdate.width()/2-20)
-                    .attr("y", chartToUpdate.height()-3)
+                    .attr("y", chartToUpdate.height()-2)
                     .text(displayText);
     }
 
