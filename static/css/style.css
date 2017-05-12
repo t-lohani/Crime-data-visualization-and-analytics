@@ -219,3 +219,16 @@ div.tab button.active {
 .radio_container {
     float: left;
 }
+
+.arc text {
+  font: 10px sans-serif;
+  text-anchor: middle;
+}
+
+.arc path {
+  stroke: #fff;
+}
+
+.bubble_svg {
+    transform: translate(100px, 100px);
+}

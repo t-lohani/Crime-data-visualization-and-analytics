@@ -60,6 +60,13 @@ var maxCrimeCounty = 0;
 var maxCrimeState = 0;
 
 var fontFamily = 'verdana';
+var colorCounty;
+var colorState;
+
+var countySelected = null;
+var stateSelected = null;
+var selectedCountySVG
+var selectedStateSVG
 
 queue()
     .defer(d3.json, "/get_squareloadings")
@@ -155,8 +162,8 @@ function initData(error, squareLoadingsJson, eigenValuesJson, pcaDataJson, mdsDa
 //    populate_intrinsic();
 //    populate_pca();
 //    populate_mds();
-    populate_silder_county_map();
-    populate_silder_state_map();
+    populate_slider_county_map();
+    populate_slider_state_map();
 //    populate_parallel2();
 //    populate_stack();
 //    populate_bubble();
@@ -171,7 +178,7 @@ function initData(error, squareLoadingsJson, eigenValuesJson, pcaDataJson, mdsDa
 //    document.getElementById("btn_bubble").click();
 }
 
-function populate_silder_county_map() {
+function populate_slider_county_map() {
 
     console.log("Tarun", "Inside populate_silder_county_map")
 
@@ -183,7 +190,7 @@ function populate_silder_county_map() {
 
     var diffCounty = maxCrimeCounty - minCrimeCounty
 
-    var colorCounty = d3.scale.linear()
+    colorCounty = d3.scale.linear()
         .domain([diffCounty/100000, diffCounty/10000, diffCounty/1000, diffCounty/100, diffCounty/10, diffCounty])
         .range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
 //        .range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]);
@@ -201,6 +208,7 @@ function populate_silder_county_map() {
         .enter().append("path")
         .style("fill", function(d) { return colorCounty(crimeByCounty[d.id]); })
         .attr("d", path)
+        .on("click", countyClick)
         .append("title")
         .text(function(d) { return countyName[d.id] + "\n" +
                                    murderByCounty[d.id] + " Murders\n" +
@@ -246,7 +254,114 @@ function populate_silder_county_map() {
 }
 
 
-function populate_silder_state_map() {
+function countyClick(d) {
+//    console.log("Tarun", "Inside countyClick");
+
+    var selectedCountyId = d.id;
+//    console.log("Tarun", selectedCountyId);
+
+    if(countySelected==null) {
+        d3.select(this)
+            .style("fill", 'red');
+        countySelected = selectedCountyId;
+        selectedCountySVG = this;
+        makePieChart(countySelected, 1);
+    } else if(countySelected == selectedCountyId) {
+        d3.select(selectedCountySVG).style("fill", colorCounty(crimeByCounty[countySelected]));
+        countySelected = null;
+        selectedCountySVG = null;
+        document.getElementById("pie_chart").style.display = "none";
+    } else {
+        d3.select(selectedCountySVG).style("fill", colorCounty(crimeByCounty[countySelected]));
+        d3.select(this)
+            .style("fill", 'red');
+        countySelected = selectedCountyId;
+        selectedCountySVG = this;
+        makePieChart(countySelected, 1);
+    }
+}
+
+function makePieChart(selected, mapType) {
+
+    var svg = d3.select("#pie_chart");
+    var width = 300;
+    var height = 300;
+    var radius = 150;
+
+    var g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+    var color = d3.scale.category10();
+
+    var pie = d3.layout.pie()
+        .sort(null)
+        .value(function(d) { return d.Count; });
+
+    var path = d3.svg.arc()
+        .outerRadius(radius - 10)
+        .innerRadius(0);
+
+    var label = d3.svg.arc()
+        .outerRadius(radius - 40)
+        .innerRadius(radius - 40);
+
+    var data = []
+//    var type = {"Murder", "Rapes", "Robberies", "Assaults", "Bulglaries", "Larencies", "Thefts", "Arsons"}
+
+    var item = {}
+
+    if (mapType == 1) {
+        item ["crimeType"] = "Murder";
+        item ["Count"] = murderByCounty[selected];
+        data.push(item)
+
+        item ["crimeType"] = "Rapes";
+        item ["Count"] = rapeByCounty[selected];
+        data.push(item)
+
+        item ["crimeType"] = "Robberies";
+        item ["Count"] = robberyByCounty[selected];
+        data.push(item)
+
+        item ["crimeType"] = "Assaults";
+        item ["Count"] = assaultByCounty[selected];
+        data.push(item)
+
+        item ["crimeType"] = "Bulglaries";
+        item ["Count"] = burglaryByCounty[selected];
+        data.push(item)
+
+        item ["crimeType"] = "Larencies";
+        item ["Count"] = larencyByCounty[selected];
+        data.push(item)
+
+        item ["crimeType"] = "Thefts";
+        item ["Count"] = theftByCounty[selected];
+        data.push(item)
+
+        item ["crimeType"] = "Arsons";
+        item ["Count"] = arsonByCounty[selected];
+        data.push(item)
+    } else {
+
+    }
+
+    var arc = g.selectAll(".arc")
+        .data(pie(data))
+        .enter().append("g")
+        .attr("class", "arc");
+
+    arc.append("path")
+        .attr("d", path)
+        .attr("fill", function(d) { return color(d.data.crimeType); });
+
+    arc.append("text")
+        .attr("transform", function(d) { return "translate(" + label.centroid(d) + ")"; })
+        .attr("dy", "0.35em")
+        .text(function(d) { return d.data.crimeType; });
+
+    document.getElementById("pie_chart").style.display = "block";
+}
+
+function populate_slider_state_map() {
 
     console.log("Tarun", "Inside populate_silder_state_map")
 
@@ -259,7 +374,7 @@ function populate_silder_state_map() {
     var diffState = maxCrimeState - minCrimeState
     console.log("diffState", diffState);
 
-    var colorState = d3.scale.linear()
+    colorState = d3.scale.linear()
         .domain([diffState/100000, diffState/10000, diffState/1000, diffState/100, diffState/10, diffState])
         .range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
 //        .range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]);
@@ -1279,6 +1394,12 @@ function openTabClick(evt, container, index) {
     }
 }
 
-function changeMapType() {
-
+function contains(array, obj) {
+    var i = array.length;
+    while (i--) {
+        if (array[i] === obj) {
+            return true;
+        }
+    }
+    return false;
 }
