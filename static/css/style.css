@@ -155,7 +155,7 @@ div.tab button.active {
 }
 
 .slider_container {
-    display: none;
+    /*display: none;*/
     float: left;
     width: 330px;
 }

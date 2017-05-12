@@ -201,7 +201,7 @@ function populate_slider_county_map() {
 
 //    console.log("Tarun", "Appending paths in Map");
 
-    svg.append("g")
+    var mapSvg = svg.append("g")
         .attr("class", "counties")
         .selectAll("path")
         .data(topojson.feature(d3Us, d3Us.objects.counties).features)
@@ -229,30 +229,114 @@ function populate_slider_county_map() {
 
     console.log("Tarun", "Hi there");
 
+    crimeDataCounty.forEach(function(d) {
+            countyName[d.id] = d["County Name"]
+            murderByCounty[d.id] = d["Murders_Rate"]
+            rapeByCounty[d.id] = d["Rapes_Rate"]
+            robberyByCounty[d.id] = d["Robberies_Rate"]
+            assaultByCounty[d.id] = d["Assaults_Rate"]
+            burglaryByCounty[d.id] = d["Burglaries_Rate"]
+            larencyByCounty[d.id] = d["Larencies_Rate"]
+            theftByCounty[d.id] = d["Thefts_Rate"]
+            arsonByCounty[d.id] = d["Arsons_Rate"]
+            populationByCounty[d.id] = d["Population"]
+            crimeByCounty[d.id] = d["Murders"] + d["Rapes"] + d["Robberies"] + d["Assaults"] +
+                                    d["Burglaries"] + d["Larencies"] + d["Thefts"] + d["Arsons"]
+
+    //        console.log("crimeByCounty[d.id] : ", crimeByCounty[d.id]);
+
+            if (crimeByCounty[d.id] < minCrimeCounty) {
+                minCrimeCounty = crimeByCounty[d.id]
+            }
+
+            if (crimeByCounty[d.id] > maxCrimeCounty) {
+                maxCrimeCounty = crimeByCounty[d.id]
+            }
+        });
+
 //    Code for slider starts here
+    d3.select('#slider3').call(d3.slider().axis(d3.svg.axis().ticks(10)).value([0, 0]).min(0).max(10).step(1).on("slide", function(evt, value) {
+        console.log("Tarun", "Slider sliding");
 
-    d3.select('#slider1').call(d3.slider().value(50));
-    d3.select('#slider2').call(d3.slider().value( [ 10, 25 ] ));
+        d3.selectAll("path").style("fill", function(d) {return colorCounty(crimeDataCounty[d.id])});
 
-/*
-    d3.select('#slider3').call(d3.slider().axis(true).value( [ 10, 25 ] ).on("slide", function(evt, value) {
-//        d3.select('#slider3textmin').text(value[ 0 ]);
-//        d3.select('#slider3textmax').text(value[ 1 ]);
+        /*svg.append("g")
+        .attr("class", "counties")
+        .selectAll("path")
+        .data(topojson.feature(d3Us, d3Us.objects.counties).features)
+        .enter().append("path")
+        .style("fill", "black")
+        .attr("d", path)
+        .on("click", countyClick)
+        .append("title")
+        .text(function(d) { return countyName[d.id] + "\n" +
+                                   murderByCounty[d.id] + " Murders\n" +
+                                   rapeByCounty[d.id] + " Rapes\n" +
+                                   robberyByCounty[d.id] + " Robberies\n" +
+                                   assaultByCounty[d.id] + " Assaults\n" +
+                                   burglaryByCounty[d.id] + " Bulglaries\n" +
+                                   larencyByCounty[d.id] + " Larencies\n" +
+                                   theftByCounty[d.id] + " Thefts\n" +
+                                   arsonByCounty[d.id] + " Arsons\n" +
+                                   crimeByCounty[d.id] + " Total Crimes\n" +
+                                   populationByCounty[d.id] + " Total Population"; });*/
+
     }));
-
-    d3.select('#slider4').call(d3.slider().on("slide", function(evt, value) {
-//        d3.select('#slider4text').text(value);
-    }));
-
-    d3.select('#slider5').call(d3.slider().axis(true));
-
-    var slideraxis = d3.svg.axis().orient("top").ticks(4);
-    d3.select('#slider6').call(d3.slider().axis(slideraxis));
-
-    d3.select('#slider7').call(d3.slider().axis(true).min(2000).max(2100).step(5));*/
 
 }
 
+
+function populate_slider_state_map() {
+
+    console.log("Tarun", "Inside populate_silder_state_map")
+
+    var width = 960;
+    var height = 600;
+
+    console.log("Max crime state", maxCrimeState);
+    console.log("Min crime state", minCrimeState);
+
+    var diffState = maxCrimeState - minCrimeState
+    console.log("diffState", diffState);
+
+    colorState = d3.scale.linear()
+        .domain([diffState/100000, diffState/10000, diffState/1000, diffState/100, diffState/10, diffState])
+        .range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
+//        .range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]);
+
+    var path = d3.geo.path();
+    var svg = d3.select("#map_slide_state")
+
+//    console.log("Tarun", "Appending paths in Map");
+    svg.append("g")
+        .attr("class", "states")
+        .selectAll("path")
+        .data(topojson.feature(d3Us, d3Us.objects.states).features)
+        .enter().append("path")
+        .style("fill", function(d) { return colorState(crimeByState[d.id]); })
+        .attr("d", path)
+        .on("click", stateClick)
+        .append("title")
+        .text(function(d) { return stateName[d.id] + "\n" +
+                                   murderByState[d.id] + " Murders\n" +
+                                   rapeByState[d.id] + " Rapes\n" +
+                                   robberyByState[d.id] + " Robberies\n" +
+                                   assaultByState[d.id] + " Assaults\n" +
+                                   burglaryByState[d.id] + " Bulglaries\n" +
+                                   larencyByState[d.id] + " Larencies\n" +
+                                   theftByState[d.id] + " Thefts\n" +
+                                   arsonByState[d.id] + " Arsons\n" +
+                                   crimeByState[d.id] + " Total Crimes\n" +
+                                   populationByState[d.id] + " Total Population"; });
+
+    svg.append("path")
+        .datum(topojson.mesh(d3Us, d3Us.objects.states, function(a, b) { return a !== b; }))
+        .attr("class", "state-borders")
+        .attr("d", path);
+
+    console.log("Tarun", "Hi there");
+
+}
 
 function countyClick(d) {
 //    console.log("Tarun", "Inside countyClick");
@@ -278,6 +362,33 @@ function countyClick(d) {
         countySelected = selectedCountyId;
         selectedCountySVG = this;
         makePieChart(countySelected, 1);
+    }
+}
+
+function stateClick(d) {
+//    console.log("Tarun", "Inside countyClick");
+
+    var selectedStateId = d.id;
+//    console.log("Tarun", selectedStateId);
+
+    if(stateSelected==null) {
+        d3.select(this)
+            .style("fill", 'red');
+        stateSelected = selectedStateId;
+        selectedStateSVG = this;
+        makePieChart(stateSelected, 2);
+    } else if(stateSelected == selectedStateId) {
+        d3.select(selectedStateSVG).style("fill", colorState(crimeByState[stateSelected]));
+        stateSelected = null;
+        selectedStateSVG = null;
+        document.getElementById("pie_chart").style.display = "none";
+    } else {
+        d3.select(selectedStateSVG).style("fill", colorState(crimeByState[stateSelected]));
+        d3.select(this)
+            .style("fill", 'red');
+        stateSelected = selectedStateId;
+        selectedStateSVG = this;
+        makePieChart(stateSelected, 2);
     }
 }
 
@@ -341,7 +452,37 @@ function makePieChart(selected, mapType) {
         item ["Count"] = arsonByCounty[selected];
         data.push(item)
     } else {
+        item ["crimeType"] = "Murder";
+        item ["Count"] = murderByState[selected];
+        data.push(item)
 
+        item ["crimeType"] = "Rapes";
+        item ["Count"] = rapeByState[selected];
+        data.push(item)
+
+        item ["crimeType"] = "Robberies";
+        item ["Count"] = robberyByState[selected];
+        data.push(item)
+
+        item ["crimeType"] = "Assaults";
+        item ["Count"] = assaultByState[selected];
+        data.push(item)
+
+        item ["crimeType"] = "Bulglaries";
+        item ["Count"] = burglaryByState[selected];
+        data.push(item)
+
+        item ["crimeType"] = "Larencies";
+        item ["Count"] = larencyByState[selected];
+        data.push(item)
+
+        item ["crimeType"] = "Thefts";
+        item ["Count"] = theftByState[selected];
+        data.push(item)
+
+        item ["crimeType"] = "Arsons";
+        item ["Count"] = arsonByState[selected];
+        data.push(item)
     }
 
     var arc = g.selectAll(".arc")
@@ -359,57 +500,6 @@ function makePieChart(selected, mapType) {
         .text(function(d) { return d.data.crimeType; });
 
     document.getElementById("pie_chart").style.display = "block";
-}
-
-function populate_slider_state_map() {
-
-    console.log("Tarun", "Inside populate_silder_state_map")
-
-    var width = 960;
-    var height = 600;
-
-    console.log("Max crime state", maxCrimeState);
-    console.log("Min crime state", minCrimeState);
-
-    var diffState = maxCrimeState - minCrimeState
-    console.log("diffState", diffState);
-
-    colorState = d3.scale.linear()
-        .domain([diffState/100000, diffState/10000, diffState/1000, diffState/100, diffState/10, diffState])
-        .range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
-//        .range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]);
-
-    var path = d3.geo.path();
-    var svg = d3.select("#map_slide_state")
-
-//    console.log("Tarun", "Appending paths in Map");
-    svg.append("g")
-        .attr("class", "states")
-        .selectAll("path")
-        .data(topojson.feature(d3Us, d3Us.objects.states).features)
-        .enter().append("path")
-        .style("fill", function(d) { return colorState(crimeByState[d.id]); })
-        .attr("d", path)
-        .append("title")
-        .text(function(d) { return stateName[d.id] + "\n" +
-                                   murderByState[d.id] + " Murders\n" +
-                                   rapeByState[d.id] + " Rapes\n" +
-                                   robberyByState[d.id] + " Robberies\n" +
-                                   assaultByState[d.id] + " Assaults\n" +
-                                   burglaryByState[d.id] + " Bulglaries\n" +
-                                   larencyByState[d.id] + " Larencies\n" +
-                                   theftByState[d.id] + " Thefts\n" +
-                                   arsonByState[d.id] + " Arsons\n" +
-                                   crimeByState[d.id] + " Total Crimes\n" +
-                                   populationByState[d.id] + " Total Population"; });
-
-    svg.append("path")
-        .datum(topojson.mesh(d3Us, d3Us.objects.states, function(a, b) { return a !== b; }))
-        .attr("class", "state-borders")
-        .attr("d", path);
-
-    console.log("Tarun", "Hi there");
-
 }
 
 function populate_dashboard() {
