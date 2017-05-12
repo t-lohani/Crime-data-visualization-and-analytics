@@ -8,7 +8,6 @@ var crimeDataState
 var crimeDataCounty
 var d3Us
 var dcUs
-var testData
 
 var year_ndx
 
@@ -78,11 +77,10 @@ queue()
     .defer(d3.json, "/crime_db/crime_data_state")
     .defer(d3.json, "/crime_db/crime_data_county")
     .defer(d3.json, "/us_states_json")
-    .defer(d3.json, "/crime_db/crime_analysis")
     .await(initData);
 
 function initData(error, squareLoadingsJson, eigenValuesJson, pcaDataJson, mdsDataJson,
-                    crimeReportJson, dcUsJson, crimeDataStateJson, crimeDataCountyJson, d3UsJson, testJson) {
+                    crimeReportJson, dcUsJson, crimeDataStateJson, crimeDataCountyJson, d3UsJson) {
 //    console.log("Tarun", "Inside initData")
 
     if (error) throw error;
@@ -98,7 +96,6 @@ function initData(error, squareLoadingsJson, eigenValuesJson, pcaDataJson, mdsDa
 	crimeDataCounty = crimeDataCountyJson
 	d3Us = d3UsJson
 	dcUs = dcUsJson
-	testData = testJson
 
 //    console.log("Tarun Data", crimeDataCounty)
 
@@ -152,29 +149,22 @@ function initData(error, squareLoadingsJson, eigenValuesJson, pcaDataJson, mdsDa
         }
     });
 
-//    console.log("Max crime county", maxCrimeCounty);
-//    console.log("Min crime county", minCrimeCounty);
-//    console.log("Max crime state", maxCrimeState);
-//    console.log("Min crime state", minCrimeState);
-
-//    populate_dashboard();
-//    populate_dimension();
-//    populate_intrinsic();
-//    populate_pca();
-//    populate_mds();
+    populate_dashboard();
+    populate_dimension();
+    populate_intrinsic();
+    populate_pca();
+    populate_mds();
     populate_slider_county_map();
     populate_slider_state_map();
-//    populate_parallel2();
-//    populate_stack();
-//    populate_bubble();
+    populate_parallel();
+    populate_bubble();
     console.log("Tarun", "Initiating default click")
 //    console.log("Tarun", mdsData)
-//    document.getElementById("btn_dashboard").click();
+    document.getElementById("btn_dashboard").click();
 //    document.getElementById("btn_dimensions").click();
 //    document.getElementById("btn_pcamds").click();
-    document.getElementById("btn_mapview_slider").click();
+//    document.getElementById("btn_mapview_slider").click();
 //    document.getElementById("btn_parallel").click();
-//    document.getElementById("btn_stack").click();
 //    document.getElementById("btn_bubble").click();
 }
 
@@ -193,14 +183,11 @@ function populate_slider_county_map() {
     colorCounty = d3.scale.linear()
         .domain([diffCounty/100000, diffCounty/10000, diffCounty/1000, diffCounty/100, diffCounty/10, diffCounty])
         .range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
-//        .range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]);
-//        .range(["red", "white", "blue"]);
 
     var path = d3.geo.path();
     var svg = d3.select("#map_slide_county")
 
 //    console.log("Tarun", "Appending paths in Map");
-
     var mapSvg = svg.append("g")
         .attr("class", "counties")
         .selectAll("path")
@@ -255,33 +242,12 @@ function populate_slider_county_map() {
         });
 
 //    Code for slider starts here
-    d3.select('#slider3').call(d3.slider().axis(d3.svg.axis().ticks(10)).value([0, 0]).min(0).max(10).step(1).on("slide", function(evt, value) {
-        console.log("Tarun", "Slider sliding");
-
-        d3.selectAll("path").style("fill", function(d) {return colorCounty(crimeDataCounty[d.id])});
-
-        /*svg.append("g")
-        .attr("class", "counties")
-        .selectAll("path")
-        .data(topojson.feature(d3Us, d3Us.objects.counties).features)
-        .enter().append("path")
-        .style("fill", "black")
-        .attr("d", path)
-        .on("click", countyClick)
-        .append("title")
-        .text(function(d) { return countyName[d.id] + "\n" +
-                                   murderByCounty[d.id] + " Murders\n" +
-                                   rapeByCounty[d.id] + " Rapes\n" +
-                                   robberyByCounty[d.id] + " Robberies\n" +
-                                   assaultByCounty[d.id] + " Assaults\n" +
-                                   burglaryByCounty[d.id] + " Bulglaries\n" +
-                                   larencyByCounty[d.id] + " Larencies\n" +
-                                   theftByCounty[d.id] + " Thefts\n" +
-                                   arsonByCounty[d.id] + " Arsons\n" +
-                                   crimeByCounty[d.id] + " Total Crimes\n" +
-                                   populationByCounty[d.id] + " Total Population"; });*/
-
-    }));
+//    d3.select('#slider3').call(d3.slider().axis(d3.svg.axis().ticks(10)).value([0, 0]).min(0).max(10).step(1).on("slide", function(evt, value) {
+//        console.log("Tarun", "Slider sliding");
+//
+//        d3.selectAll("path").style("fill", function(d) {return colorCounty(crimeDataCounty[d.id])});
+//
+//    }));
 
 }
 
@@ -299,13 +265,49 @@ function populate_slider_state_map() {
     var diffState = maxCrimeState - minCrimeState
     console.log("diffState", diffState);
 
-    colorState = d3.scale.linear()
+    colorState = d3.scale.threshold()
         .domain([diffState/100000, diffState/10000, diffState/1000, diffState/100, diffState/10, diffState])
         .range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
-//        .range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]);
 
     var path = d3.geo.path();
     var svg = d3.select("#map_slide_state")
+
+    var x = d3.scale.linear()
+        .domain([1, 10])
+        .rangeRound([600, 860]);
+
+    var g = svg.append("g")
+        .attr("class", "key")
+        .attr("transform", "translate(0,40)");
+
+    g.selectAll("rect")
+        .data(colorState.range().map(function(d) {
+            d = colorState.invertExtent(d);
+            if (d[0] == null) d[0] = x.domain()[0];
+            if (d[1] == null) d[1] = x.domain()[1];
+            return d;
+        }))
+        .enter().append("rect")
+        .attr("height", 8)
+        .attr("x", function(d) { return x(d[0]); })
+        .attr("width", function(d) { return x(d[1]) - x(d[0]); })
+        .attr("fill", function(d) { return colorState(d[0]); });
+
+    g.append("text")
+    .attr("class", "caption")
+    .attr("x", x.range()[0])
+    .attr("y", -6)
+    .attr("fill", "#000")
+    .attr("text-anchor", "start")
+    .attr("font-weight", "bold")
+    .text("Unemployment rate");
+
+    g.call(d3.axisBottom(x)
+    .tickSize(13)
+    .tickFormat(function(x, i) { return i ? x : x + "%"; })
+    .tickValues(color.domain()))
+    .select(".domain")
+    .remove();
 
 //    console.log("Tarun", "Appending paths in Map");
     svg.append("g")
@@ -354,7 +356,7 @@ function countyClick(d) {
         d3.select(selectedCountySVG).style("fill", colorCounty(crimeByCounty[countySelected]));
         countySelected = null;
         selectedCountySVG = null;
-        document.getElementById("pie_chart").style.display = "none";
+        document.getElementById("pie_chart").style.visibility = "hidden";
     } else {
         d3.select(selectedCountySVG).style("fill", colorCounty(crimeByCounty[countySelected]));
         d3.select(this)
@@ -381,7 +383,7 @@ function stateClick(d) {
         d3.select(selectedStateSVG).style("fill", colorState(crimeByState[stateSelected]));
         stateSelected = null;
         selectedStateSVG = null;
-        document.getElementById("pie_chart").style.display = "none";
+        document.getElementById("pie_chart").style.visibility = "hidden";
     } else {
         d3.select(selectedStateSVG).style("fill", colorState(crimeByState[stateSelected]));
         d3.select(this)
@@ -415,71 +417,86 @@ function makePieChart(selected, mapType) {
         .innerRadius(radius - 40);
 
     var data = []
-//    var type = {"Murder", "Rapes", "Robberies", "Assaults", "Bulglaries", "Larencies", "Thefts", "Arsons"}
 
     var item = {}
 
     if (mapType == 1) {
+        var item = {}
         item ["crimeType"] = "Murder";
         item ["Count"] = murderByCounty[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Rapes";
         item ["Count"] = rapeByCounty[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Robberies";
         item ["Count"] = robberyByCounty[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Assaults";
         item ["Count"] = assaultByCounty[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Bulglaries";
         item ["Count"] = burglaryByCounty[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Larencies";
         item ["Count"] = larencyByCounty[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Thefts";
         item ["Count"] = theftByCounty[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Arsons";
         item ["Count"] = arsonByCounty[selected];
         data.push(item)
     } else {
+        var item = {}
         item ["crimeType"] = "Murder";
         item ["Count"] = murderByState[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Rapes";
         item ["Count"] = rapeByState[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Robberies";
         item ["Count"] = robberyByState[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Assaults";
         item ["Count"] = assaultByState[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Bulglaries";
         item ["Count"] = burglaryByState[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Larencies";
         item ["Count"] = larencyByState[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Thefts";
         item ["Count"] = theftByState[selected];
         data.push(item)
 
+        var item = {}
         item ["crimeType"] = "Arsons";
         item ["Count"] = arsonByState[selected];
         data.push(item)
@@ -499,7 +516,7 @@ function makePieChart(selected, mapType) {
         .attr("dy", "0.35em")
         .text(function(d) { return d.data.crimeType; });
 
-    document.getElementById("pie_chart").style.display = "block";
+    document.getElementById("pie_chart").style.visibility = "visible";
 }
 
 function populate_dashboard() {
@@ -619,10 +636,8 @@ function populate_dimension() {
 
     var data = eigenValues;
 
-//    var margin = {top: 20, right: 20, bottom: 30, left: 60};
     var width = 600;
     var height = 400;
-//
     var chart_width = 500;
     var chart_height = 450;
 
@@ -762,7 +777,6 @@ function populate_intrinsic() {
        .attr("y", function(d) { return y(d) + padding; })
        .attr("width", x)
        .attr("height", bar_height)
-//       .duration(1000).delay(300).ease('elastic');
 
     var loadings = svg.selectAll("loadings")
        .data(feature_loadings)
@@ -817,7 +831,6 @@ function populate_pca() {
 
     var width = 650;
     var height = 700;
-
     var chart_width = 600;
     var chart_height = 450;
 
@@ -996,230 +1009,7 @@ function populate_mds() {
           });
 }
 
-function populate_parallel1() {
-    var margin = {top: 30, right: 10, bottom: 10, left: 10};
-    var width = 960 - margin.left - margin.right;
-    var height = 500 - margin.top - margin.bottom;
-
-    var x = d3.scale.ordinal().rangePoints([0, width], 1);
-    var y = {};
-
-    var line = d3.svg.line();
-    var axis = d3.svg.axis().orient("left")
-    var background;
-    var foreground;
-
-    var svg = d3.select("#parallel")
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    // Returns the path for a given data point.
-    function path(d) {
-      return line(dimensions.map(function(p) { return [x(p), y[p](d[p])]; }));
-    }
-
-    // Extract the list of dimensions and create a scale for each.
-    x.domain(dimensions = d3.keys(crimeDataState[0]).filter(function(d) {
-        return (d=="State" || d == "Murders" || d == "Rapes" || d == "Robberies" || d == "Assaults"
-        || d == "Burglaries" || d == "Larencies" || d == "Thefts" || d == "Arsons") && (y[d] = d3.scale.linear()
-            .domain(d === "State"
-                    ? crimeDataState.map(function(p) { return p[d.name]; })
-                    : d3.extent(crimeDataState, function(p) { return +p[d]; }))
-            .range([height, 0]));
-     }));
-
-    // Add grey background lines for context.
-    background = svg.append("g")
-        .attr("class", "background")
-        .selectAll("path")
-        .data(crimeDataState)
-        .enter().append("path")
-        .attr("d", path);
-
-    // Add blue foreground lines for focus.
-    foreground = svg.append("g")
-        .attr("class", "foreground")
-        .selectAll("path")
-        .data(crimeDataState)
-        .enter().append("path")
-        .attr("d", path);
-
-    // Add a group element for each dimension.
-    var g = svg.selectAll(".dimension")
-        .data(dimensions)
-        .enter().append("g")
-        .attr("class", "dimension")
-        .attr("transform", function(d) { return "translate(" + x(d) + ")"; });
-
-    // Add an axis and title.
-    g.append("g")
-        .attr("class", "vaxis")
-        .each(function(d) { d3.select(this).call(axis.scale(y[d])); })
-        .append("text")
-        .style("text-anchor", "middle")
-        .attr("y", -9)
-        .text(function(d) { return d; });
-
-    // Add and store a brush for each axis.
-    g.append("g")
-        .attr("class", "brush")
-        .each(function(d) { d3.select(this).call(y[d].brush = d3.svg.brush().y(y[d]).on("brush", brush)); })
-        .selectAll("rect")
-        .attr("x", -8)
-        .attr("width", 16);
-
-
-    // Handles a brush event, toggling the display of foreground lines.
-    function brush() {
-        var actives = dimensions.filter(function(p) { return !y[p].brush.empty(); })
-        var extents = actives.map(function(p) { return y[p].brush.extent(); });
-
-        foreground.style("display", function(d) {
-            return actives.every(function(p, i) {
-                return extents[i][0] <= d[p] && d[p] <= extents[i][1];
-            }) ? null : "none";
-        });
-    }
-}
-
-
 function populate_parallel() {
-    var margin = {top: 30, right: 40, bottom: 20, left: 200};
-    var width = 1260 - margin.left - margin.right;
-    var height = 500 - margin.top - margin.bottom;
-
-    var dimensions = [
-      {
-        name: "State",
-        scale: d3.scale.ordinal().rangePoints([0, height]),
-        type: String
-      },
-      {
-        name: "Murders",
-        scale: d3.scale.linear().range([0, height]),
-        type: Number
-      },
-      {
-        name: "Rapes",
-        scale: d3.scale.linear().range([height, 0]),
-        type: Number
-      },
-      {
-        name: "Robberies",
-        scale: d3.scale.linear().range([height, 0]),
-        type: Number
-      },
-      {
-        name: "Assaults",
-        scale: d3.scale.linear().range([height, 0]),
-        type: Number
-      },
-      {
-        name: "Burglaries",
-        scale: d3.scale.linear().range([height, 0]),
-        type: Number
-      },
-      {
-        name: "Larencies",
-        scale: d3.scale.linear().range([height, 0]),
-        type: Number
-      },
-      {
-        name: "Thefts",
-        scale: d3.scale.linear().range([height, 0]),
-        type: Number
-      },
-      {
-        name: "Arsons",
-        scale: d3.scale.linear().range([height, 0]),
-        type: Number
-      }
-    ];
-
-    var x = d3.scale.ordinal()
-        .domain(dimensions.map(function(d) { return d.name; }))
-        .rangePoints([0, width]);
-
-    var y = {};
-
-    var line = d3.svg.line()
-        .defined(function(d) { return !isNaN(d[1]); });
-
-    var yAxis = d3.svg.axis()
-        .orient("left");
-
-    var svg = d3.select("#parallel")
-                .append("g")
-                .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-
-    var dimension = svg.selectAll(".dimension")
-        .data(dimensions)
-        .enter().append("g")
-        .attr("class", "dimension")
-        .attr("transform", function(d) { return "translate(" + x(d.name) + ")"; });
-
-    dimensions.forEach(function(dimension) {
-        y[dimension] = dimension.scale.domain(dimension.type === Number
-            ? d3.extent(crimeDataState, function(d) { return +d[dimension.name]; })
-            : crimeDataState.map(function(d) { return d[dimension.name]; }));
-      });
-
-    var background = svg.append("g")
-        .attr("class", "background")
-        .selectAll("path")
-        .data(crimeDataState)
-        .enter().append("path")
-        .attr("d", draw);
-
-    var foreground = svg.append("g")
-        .attr("class", "foreground")
-        .selectAll("path")
-        .data(crimeDataState)
-        .enter().append("path")
-        .attr("d", draw);
-
-    function draw(d) {
-      return line(dimensions.map(function(dimension) {
-        return [x(dimension.name), dimension.scale(d[dimension.name])];
-      }));
-    }
-
-    dimension.append("g")
-        .attr("class", "vaxis")
-        .each(function(d) { d3.select(this).call(yAxis.scale(d.scale)); })
-        .append("text")
-        .attr("class", "title")
-        .attr("text-anchor", "middle")
-        .attr("y", -9)
-        .text(function(d) { return d.name; });
-
-    // Rebind the axis data to simplify mouseover.
-    svg.select(".vaxis").selectAll("text:not(.title)")
-        .attr("class", "label")
-        .data(crimeDataState, function(d) { return d.name || d; });
-
-    var projection = svg.selectAll(".vaxis text,.background path,.foreground path")
-        .on("mouseover", mouseover)
-        .on("mouseout", mouseout);
-
-    function mouseover(d) {
-        svg.classed("active", true);
-        projection.classed("inactive", function(p) { return p !== d; });
-        projection.filter(function(p) { return p === d; }).each(moveToFront);
-    }
-
-    function mouseout(d) {
-        svg.classed("active", false);
-        projection.classed("inactive", false);
-    }
-
-    function moveToFront() {
-        this.parentNode.appendChild(this);
-    }
-}
-
-
-function populate_parallel2() {
     var margin = {top: 30, right: 40, bottom: 20, left: 200};
     var width = 1260 - margin.left - margin.right;
     var height = 500 - margin.top - margin.bottom;
@@ -1342,27 +1132,6 @@ function populate_parallel2() {
     svg.select(".vaxis").selectAll("text:not(.title)")
         .attr("class", "label")
         .data(crimeDataState, function(d) { return d.name || d; });
-/*
-    var projection = svg.selectAll(".vaxis text,.background path,.foreground path")
-        .on("mouseover", mouseover)
-        .on("mouseout", mouseout);
-
-    function mouseover(d) {
-        svg.classed("active", true);
-        projection.classed("inactive", function(p) { return p !== d; });
-        projection.filter(function(p) { return p === d; }).each(moveToFront);
-    }
-
-    function mouseout(d) {
-        svg.classed("active", false);
-        projection.classed("inactive", false);
-    }
-
-    function moveToFront() {
-        this.parentNode.appendChild(this);
-    }
-
-*/
 
     //for brushing
     // Add a group element for each dimension.
@@ -1436,13 +1205,6 @@ function populate_parallel2() {
         }) ? null : "none";
         });
     }
-
-    //end of brushing part
-}
-
-
-function populate_stack() {
-
 }
 
 function populate_bubble() {
@@ -1453,21 +1215,29 @@ function radioChange(){
     console.log('radio hit')
     state = document.getElementById('map_slide_state')
     county = document.getElementById('map_slide_county')
+
+    document.getElementById("pie_chart").style.visibility = "hidden";
+
     if(document.getElementById('state').checked){
         console.log('state checked')
-        state.style.visibility = 'visible';
-        county.style.visibility ='hidden';
-     }else{
+        state.style.display = 'block';
+        county.style.display ='none';
+        d3.select(selectedCountySVG).style("fill", colorCounty(crimeByCounty[countySelected]));
+        countySelected = null;
+        selectedCountySVG = null;
+    } else {
         console.log('county checked')
-        county.style.visibility = 'visible';
-        state.style.visibility = 'hidden';
-      }
+        county.style.display = 'block';
+        state.style.display = 'none';
+        d3.select(selectedCountySVG).style("fill", colorCounty(crimeByCounty[countySelected]));
+        stateSelected = null;
+        selectedStateSVG = null;
+    }
 }
 
 function openTabClick(evt, container, index) {
 
 //    console.log("Tarun", index);
-//     Declare all variables
     var i, tabcontent, tablinks;
 
     // Get all elements with class="tabcontent" and hide them
@@ -1485,18 +1255,6 @@ function openTabClick(evt, container, index) {
     // Show the current tab, and add an "active" class to the button that opened the tab
     document.getElementById(container).style.display = "block";
     evt.currentTarget.className += " active";
-
-    switch(index) {
-        case 1:
-//            console.log("Tarun", "Inside case 1");
-            break;
-        case 2:
-//            console.log("Tarun", "Inside case 2");
-            break;
-        case 3:
-//            console.log("Tarun", "Inside case 3");
-            break;
-    }
 }
 
 function contains(array, obj) {

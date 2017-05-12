@@ -19,8 +19,7 @@
       <button class="tablinks" onclick="openTabClick(event, 'pcamds_container', 3)" id="btn_pcamds">PCA/MDS</button>
       <button class="tablinks" onclick="openTabClick(event, 'slider_map_container', 4)" id="btn_mapview_slider">Map</button>
       <button class="tablinks" onclick="openTabClick(event, 'parallel_container', 5)" id="btn_parallel">Parallel Coordinates</button>
-      <button class="tablinks" onclick="openTabClick(event, 'stack_container', 6)" id="btn_stack">Stack Bar</button>
-      <button class="tablinks" onclick="openTabClick(event, 'bubble_container', 7)" id="btn_bubble">Bubble Chart</button>
+      <button class="tablinks" onclick="openTabClick(event, 'bubble_container', 6)" id="btn_bubble">Bubble Chart</button>
     </div>
 
     <div class="tabcontent" id="dashboard_container">
@@ -146,17 +145,15 @@
     </div>
 
     <div class="tabcontent" id="slider_map_container">
-        <svg class="map_svg" id="map_slide_county" width="870" height="550" visibility="hidden"></svg>
-        <svg class="map_svg" id="map_slide_state" width="870" height="550" visibility="visible"></svg>
-        <svg class="bubble_svg" id="pie_chart" width="300" height="300"></svg>
+        <svg class="map_svg" id="map_slide_county" width="870" height="550" display="none"></svg>
+        <svg class="map_svg" id="map_slide_state" width="870" height="550"></svg>
+        <svg class="pie_svg" id="pie_chart" width="300" height="300"></svg>
 
-        <fieldset>
-            <div class="radio_container">
-                <input type="radio" class="radio" name="maptype" onclick="radioChange()" value="state" id="state" checked="checked" />
-                <label for="state">State View</label>
-                <input type="radio" class="radio" name="maptype" onclick="radioChange()" value="county" id="county"  />
-                <label for="county">County View</label>
-            </div>
+        <fieldset style="transform: translate(-300px, 240px);">
+            <input type="radio" class="radio" name="maptype" onclick="radioChange()" value="state" id="state" checked />
+            <label for="state">State View</label>
+            <input type="radio" class="radio" name="maptype" onclick="radioChange()" value="county" id="county"  />
+            <label for="county">County View</label>
         </fieldset>
     </div>
 
@@ -173,10 +170,6 @@
 
     <div class="tabcontent" id="parallel_container">
         <svg class="parallel_svg" id="parallel" width="1260" height="500"></svg>
-    </div>
-
-    <div class="tabcontent" id="stack_container">
-        <svg class="stack_svg" id="stack" width="940" height="460"></svg>
     </div>
 
     <div class="tabcontent" id="bubble_container">

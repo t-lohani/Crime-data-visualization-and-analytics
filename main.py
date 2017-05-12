@@ -1,28 +1,21 @@
 import json
-
-from bson import json_util
-from flask import Flask
-from flask import render_template
-from pymongo import MongoClient
-from sklearn.manifold import MDS
-from scipy.spatial.distance import squareform,pdist
-from sklearn.metrics import euclidean_distances
-
-# from __future__ import division
-
-import random
 import sys
 
 import numpy as np
 import pandas
 import pylab as plt
+from bson import json_util
+from flask import Flask
+from flask import render_template
+from pymongo import MongoClient
+from scipy.spatial.distance import cdist
 from sklearn import manifold
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import pairwise_distances
-from scipy.spatial.distance import cdist
-from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
+
+# from __future__ import division
 
 input_file = pandas.read_csv('Crime_Data_County.csv', low_memory=False)
 
@@ -30,21 +23,14 @@ loadingVector = {}
 
 columns = ['Murders', 'Rapes', 'Robberies', 'Assaults', 'Burglaries', 'Larencies', 'Thefts', 'Arsons', 'Population']
 
-# scaler = StandardScaler()
-# input_file[columns]=scaler.fit_transform(input_file[columns])
-
 minmaxscaler = MinMaxScaler()
 input_file[columns]=minmaxscaler.fit_transform(input_file[columns])
 
 features = input_file[columns]
 data = np.array(features)
 random_samples = []
-print len(input_file)
-#rnd = random.sample(range(len(input_file)), 100 )
-#print len(rnd)
 for j in range(400):
     random_samples.append(data[j])
-print random_samples
 
 eigenValues = []
 eigenVectors = []
@@ -153,13 +139,6 @@ county_data_collection = connection[DBS_NAME][CRIME_DATA_COUNTY_COLLECTION]
 report_collection = connection[DBS_NAME][CRIME_REPORT_COLLECTION]
 analysis_collection = connection[DBS_NAME][CRIME_ANALYSIS_COLLECTION]
 
-# data_projects = data_collection.find(projection=DATA_FIELDS)
-# year_projects = year_collection.find(projection=YEAR_FIELDS)
-# analysis_projects = analysis_collection.find(projection=ANALYSIS_FIELDS)
-
-# for project in projects:
-#     print(project)
-
 app = Flask(__name__)
 
 @app.route("/")
@@ -199,7 +178,6 @@ def pca_analysis():
     except:
         e = sys.exc_info()[0]
         print(e)
-    print 'pca ready to load'
     return pandas.json.dumps(data_col)
 
 @app.route("/mds_analysis")
@@ -211,14 +189,10 @@ def mds_analysis():
         global random_samples
         #data =np.array(data)
         global imp_fetures
-        print 'mds'
         mds_data = manifold.MDS(n_components=2, dissimilarity='precomputed')
-        print 'manifold'
         similarity = pairwise_distances(random_samples, metric='correlation')
         X = mds_data.fit_transform(similarity)
-        print X
         data_cols = pandas.DataFrame(X)
-        print data_cols
 
         for i in range(0, 2):
             data_cols[columns[imp_fetures[i]]] = input_file[columns[imp_fetures[i]]]
@@ -228,7 +202,6 @@ def mds_analysis():
     except:
         e = sys.exc_info()[0]
         print(e)
-    print 'mds ready to load'
     return pandas.json.dumps(data_cols)
 
 
@@ -279,10 +252,6 @@ def us_states_json():
         data = json.load(data_file)
     data = json.dumps(data, default=json_util.default)
     return data
-
-# @app.route("/crime_analysis/2015")
-# def crime_analysis_home():
-#     return render_template("crime_analysis.html")
 
 if __name__ == "__main__":
     app.run('localhost', '5050')

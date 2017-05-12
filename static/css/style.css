@@ -155,7 +155,7 @@ div.tab button.active {
 }
 
 .slider_container {
-    /*display: none;*/
+    display: none;
     float: left;
     width: 330px;
 }
@@ -248,6 +248,6 @@ input.radio {
   stroke: #fff;
 }
 
-.bubble_svg {
+.pie_svg {
     transform: translate(100px, 100px);
 }
