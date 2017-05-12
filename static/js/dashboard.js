@@ -9,6 +9,8 @@ var crimeDataCounty
 var d3Us
 var dcUs
 
+var state_view =true;
+
 var year_ndx
 
 var state_abbr_dim
@@ -62,10 +64,17 @@ var fontFamily = 'verdana';
 var colorCounty;
 var colorState;
 
-var countySelected = null;
-var stateSelected = null;
-var selectedCountySVG
-var selectedStateSVG
+var selectedSVGList = []
+
+var teamList = [];
+var selectedTeamId;
+var teamId;
+var teamRadarData = [];
+
+var countyList = [];
+var selectedCountyId;
+var countyId;
+var countyRadarData = [];
 
 queue()
     .defer(d3.json, "/get_squareloadings")
@@ -149,21 +158,21 @@ function initData(error, squareLoadingsJson, eigenValuesJson, pcaDataJson, mdsDa
         }
     });
 
-    populate_dashboard();
-    populate_dimension();
-    populate_intrinsic();
-    populate_pca();
-    populate_mds();
+//    populate_dashboard();
+//    populate_dimension();
+//    populate_intrinsic();
+//    populate_pca();
+//    populate_mds();
     populate_slider_county_map();
     populate_slider_state_map();
-    populate_parallel();
-    populate_bubble();
+//    populate_parallel();
+    document.getElementById("state_btn").checked = true;
     console.log("Tarun", "Initiating default click")
 //    console.log("Tarun", mdsData)
-    document.getElementById("btn_dashboard").click();
+//    document.getElementById("btn_dashboard").click();
 //    document.getElementById("btn_dimensions").click();
 //    document.getElementById("btn_pcamds").click();
-//    document.getElementById("btn_mapview_slider").click();
+    document.getElementById("btn_mapview_slider").click();
 //    document.getElementById("btn_parallel").click();
 //    document.getElementById("btn_bubble").click();
 }
@@ -187,15 +196,22 @@ function populate_slider_county_map() {
     var path = d3.geo.path();
     var svg = d3.select("#map_slide_county")
 
+    var legend_svg = d3.select("#legend_area_county")
+
+    var sampleNumerical = [diffCounty/100000, diffCounty/10000, diffCounty/1000, diffCounty/100, diffCounty/10, diffCounty];
+    var sampleThreshold = d3.scale.threshold().domain(sampleNumerical).range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
+    var horizontalLegend = d3.svg.legend().units("Crimes").cellWidth(80).cellHeight(15).inputScale(sampleThreshold).cellStepping(100);
+    legend_svg.append("g").attr("class", "legend").call(horizontalLegend);
+
 //    console.log("Tarun", "Appending paths in Map");
-    var mapSvg = svg.append("g")
+    svg.append("g")
         .attr("class", "counties")
         .selectAll("path")
         .data(topojson.feature(d3Us, d3Us.objects.counties).features)
         .enter().append("path")
         .style("fill", function(d) { return colorCounty(crimeByCounty[d.id]); })
         .attr("d", path)
-        .on("click", countyClick)
+        .on("click", stateClick)
         .append("title")
         .text(function(d) { return countyName[d.id] + "\n" +
                                    murderByCounty[d.id] + " Murders\n" +
@@ -215,40 +231,6 @@ function populate_slider_county_map() {
         .attr("d", path);
 
     console.log("Tarun", "Hi there");
-
-    crimeDataCounty.forEach(function(d) {
-            countyName[d.id] = d["County Name"]
-            murderByCounty[d.id] = d["Murders_Rate"]
-            rapeByCounty[d.id] = d["Rapes_Rate"]
-            robberyByCounty[d.id] = d["Robberies_Rate"]
-            assaultByCounty[d.id] = d["Assaults_Rate"]
-            burglaryByCounty[d.id] = d["Burglaries_Rate"]
-            larencyByCounty[d.id] = d["Larencies_Rate"]
-            theftByCounty[d.id] = d["Thefts_Rate"]
-            arsonByCounty[d.id] = d["Arsons_Rate"]
-            populationByCounty[d.id] = d["Population"]
-            crimeByCounty[d.id] = d["Murders"] + d["Rapes"] + d["Robberies"] + d["Assaults"] +
-                                    d["Burglaries"] + d["Larencies"] + d["Thefts"] + d["Arsons"]
-
-    //        console.log("crimeByCounty[d.id] : ", crimeByCounty[d.id]);
-
-            if (crimeByCounty[d.id] < minCrimeCounty) {
-                minCrimeCounty = crimeByCounty[d.id]
-            }
-
-            if (crimeByCounty[d.id] > maxCrimeCounty) {
-                maxCrimeCounty = crimeByCounty[d.id]
-            }
-        });
-
-//    Code for slider starts here
-//    d3.select('#slider3').call(d3.slider().axis(d3.svg.axis().ticks(10)).value([0, 0]).min(0).max(10).step(1).on("slide", function(evt, value) {
-//        console.log("Tarun", "Slider sliding");
-//
-//        d3.selectAll("path").style("fill", function(d) {return colorCounty(crimeDataCounty[d.id])});
-//
-//    }));
-
 }
 
 
@@ -265,49 +247,19 @@ function populate_slider_state_map() {
     var diffState = maxCrimeState - minCrimeState
     console.log("diffState", diffState);
 
-    colorState = d3.scale.threshold()
+    colorState = d3.scale.linear()
         .domain([diffState/100000, diffState/10000, diffState/1000, diffState/100, diffState/10, diffState])
         .range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
 
     var path = d3.geo.path();
     var svg = d3.select("#map_slide_state")
 
-    var x = d3.scale.linear()
-        .domain([1, 10])
-        .rangeRound([600, 860]);
+    var legend_svg = d3.select("#legend_area_state")
 
-    var g = svg.append("g")
-        .attr("class", "key")
-        .attr("transform", "translate(0,40)");
-
-    g.selectAll("rect")
-        .data(colorState.range().map(function(d) {
-            d = colorState.invertExtent(d);
-            if (d[0] == null) d[0] = x.domain()[0];
-            if (d[1] == null) d[1] = x.domain()[1];
-            return d;
-        }))
-        .enter().append("rect")
-        .attr("height", 8)
-        .attr("x", function(d) { return x(d[0]); })
-        .attr("width", function(d) { return x(d[1]) - x(d[0]); })
-        .attr("fill", function(d) { return colorState(d[0]); });
-
-    g.append("text")
-    .attr("class", "caption")
-    .attr("x", x.range()[0])
-    .attr("y", -6)
-    .attr("fill", "#000")
-    .attr("text-anchor", "start")
-    .attr("font-weight", "bold")
-    .text("Unemployment rate");
-
-    g.call(d3.axisBottom(x)
-    .tickSize(13)
-    .tickFormat(function(x, i) { return i ? x : x + "%"; })
-    .tickValues(color.domain()))
-    .select(".domain")
-    .remove();
+    var sampleNumerical = [diffState/100000, diffState/10000, diffState/1000, diffState/100, diffState/10, diffState];
+    var sampleThreshold = d3.scale.threshold().domain(sampleNumerical).range(["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#756bb1", "#54278f"]);
+    var horizontalLegend = d3.svg.legend().units("Crimes").cellWidth(80).cellHeight(15).inputScale(sampleThreshold).cellStepping(100);
+    legend_svg.append("g").attr("class", "legend").call(horizontalLegend);
 
 //    console.log("Tarun", "Appending paths in Map");
     svg.append("g")
@@ -340,183 +292,142 @@ function populate_slider_state_map() {
 
 }
 
-function countyClick(d) {
-//    console.log("Tarun", "Inside countyClick");
-
-    var selectedCountyId = d.id;
-//    console.log("Tarun", selectedCountyId);
-
-    if(countySelected==null) {
-        d3.select(this)
-            .style("fill", 'red');
-        countySelected = selectedCountyId;
-        selectedCountySVG = this;
-        makePieChart(countySelected, 1);
-    } else if(countySelected == selectedCountyId) {
-        d3.select(selectedCountySVG).style("fill", colorCounty(crimeByCounty[countySelected]));
-        countySelected = null;
-        selectedCountySVG = null;
-        document.getElementById("pie_chart").style.visibility = "hidden";
-    } else {
-        d3.select(selectedCountySVG).style("fill", colorCounty(crimeByCounty[countySelected]));
-        d3.select(this)
-            .style("fill", 'red');
-        countySelected = selectedCountyId;
-        selectedCountySVG = this;
-        makePieChart(countySelected, 1);
-    }
+function teamDataset(teamRadarData) {
+    return teamRadarData.map(function(d) {
+        console.log("render", d.id)
+        return {
+            id: d.id,
+            axes: d.axes.map(function(axis) {
+                return { axis: axis.axis, value: axis.value };})
+        };
+    });
 }
+
 
 function stateClick(d) {
-//    console.log("Tarun", "Inside countyClick");
-
-    var selectedStateId = d.id;
-//    console.log("Tarun", selectedStateId);
-
-    if(stateSelected==null) {
+    console.log("----->>>>", d.id)
+    selectedTeamId = d.id;
+    if (contains(teamList, selectedTeamId)) { //Contains the node
         d3.select(this)
-            .style("fill", 'red');
-        stateSelected = selectedStateId;
-        selectedStateSVG = this;
-        makePieChart(stateSelected, 2);
-    } else if(stateSelected == selectedStateId) {
-        d3.select(selectedStateSVG).style("fill", colorState(crimeByState[stateSelected]));
-        stateSelected = null;
-        selectedStateSVG = null;
-        document.getElementById("pie_chart").style.visibility = "hidden";
-    } else {
-        d3.select(selectedStateSVG).style("fill", colorState(crimeByState[stateSelected]));
-        d3.select(this)
-            .style("fill", 'red');
-        stateSelected = selectedStateId;
-        selectedStateSVG = this;
-        makePieChart(stateSelected, 2);
+            .style("fill", function(d){ return colorState(crimeByState[d.id])});
+
+        for (var i = 0; i < teamRadarData.length; i++) {
+            if (selectedTeamId == teamRadarData[i].id) {
+                teamRadarData.splice(i, 1);
+                if (state_view) {
+                    selectedSVGList[i].svg.style("fill", function(d){ return colorState(crimeByState[selectedSVGList[i].id])});
+                } else {
+                    selectedSVGList[i].svg.style("fill", function(d){ return colorCounty(crimeByCounty[selectedSVGList[i].id])});
+                }
+
+                selectedSVGList.splice(i, 1);
+                break;
+            };
+        }
+
+        //Remove in the teamList;
+        var index = teamList.indexOf(selectedTeamId);
+        teamList.splice(index,1);
+
+        //Existing node number after deleting
+        if (teamList.length == 0) {
+            d3.selectAll(".teamRadar").remove();
+
+        }
+
+        if  (teamList.length >= 1) {
+           renderRadarChart();
+       }
+    } else {    //Does not contain the node
+        teamList.push(selectedTeamId);
+
+        var item = {}
+        item ["id"] = d.id;
+        item ["svg"] = d3.select(this);
+        selectedSVGList.push(item)
+
+        active = d3.select(this).style("fill", "orange");
+                //Loop through once for each team data value
+         if(state_view)
+            pushTeamRadarData(crimeDataState);
+         else
+            pushTeamRadarData(crimeDataCounty);
+         renderRadarChart();
     }
 }
 
-function makePieChart(selected, mapType) {
 
-    var svg = d3.select("#pie_chart");
-    var width = 300;
-    var height = 300;
-    var radius = 150;
+function regularizeRank(rank) {
+    return rank;//((31 - rank) / 30 * 100).toFixed(1);
+}
 
-    var g = svg.append("g").attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
-    var color = d3.scale.category10();
 
-    var pie = d3.layout.pie()
-        .sort(null)
-        .value(function(d) { return d.Count; });
+function pushTeamRadarData(teamData){
 
-    var path = d3.svg.arc()
-        .outerRadius(radius - 10)
-        .innerRadius(0);
+        teamData.forEach(function(d) {
+            //console.log("id" + d)
+            if (d.id == selectedTeamId) {
+             console.log('data matched');//Grab the team
+                var teamAxes = [];
+                teamAxes.push({axis: "Arsons", value: regularizeRank(d["Arsons_Rate"] * 8)});
+                teamAxes.push({axis: "Robberies", value: regularizeRank(d["Robberies_Rate"] )});
+                teamAxes.push({axis: "Larencies", value: regularizeRank(d["Larencies_Rate"]/20)});
+                teamAxes.push({axis: "Murders", value: regularizeRank(d["Murders_Rate"] * 15)});
+                teamAxes.push({axis: "Assaults", value: regularizeRank(d["Assaults_Rate"]/3)});
+                teamAxes.push({axis: "Rapes", value: regularizeRank(d["Rapes_Rate"] *5)});
+                teamAxes.push({axis: "Burglaries", value: regularizeRank(d["Burglaries_Rate"]/9)});
+                teamAxes.push({axis: "Thefts", value: regularizeRank(d["Thefts_Rate"]/2)});
 
-    var label = d3.svg.arc()
-        .outerRadius(radius - 40)
-        .innerRadius(radius - 40);
-
-    var data = []
-
-    var item = {}
-
-    if (mapType == 1) {
-        var item = {}
-        item ["crimeType"] = "Murder";
-        item ["Count"] = murderByCounty[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Rapes";
-        item ["Count"] = rapeByCounty[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Robberies";
-        item ["Count"] = robberyByCounty[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Assaults";
-        item ["Count"] = assaultByCounty[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Bulglaries";
-        item ["Count"] = burglaryByCounty[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Larencies";
-        item ["Count"] = larencyByCounty[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Thefts";
-        item ["Count"] = theftByCounty[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Arsons";
-        item ["Count"] = arsonByCounty[selected];
-        data.push(item)
-    } else {
-        var item = {}
-        item ["crimeType"] = "Murder";
-        item ["Count"] = murderByState[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Rapes";
-        item ["Count"] = rapeByState[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Robberies";
-        item ["Count"] = robberyByState[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Assaults";
-        item ["Count"] = assaultByState[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Bulglaries";
-        item ["Count"] = burglaryByState[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Larencies";
-        item ["Count"] = larencyByState[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Thefts";
-        item ["Count"] = theftByState[selected];
-        data.push(item)
-
-        var item = {}
-        item ["crimeType"] = "Arsons";
-        item ["Count"] = arsonByState[selected];
-        data.push(item)
+                teamRadarData.push({id: d.id, axes: teamAxes});
+            }
+        });
+ //       console.log('data'+ teamRadarData[0].id);
     }
 
-    var arc = g.selectAll(".arc")
-        .data(pie(data))
-        .enter().append("g")
-        .attr("class", "arc");
+    function renderRadarChart() {
+        console.log("Tarun", "Inside renderRadarChart");
+        var radarChart = RadarChart.chart();
+        var defaultConfig = radarChart.config();
+        radarChart.config({w: 300, h: 300, levels: 4, maxValue: 100});
+        var svg = d3.select("#radar_chart_state");
+        var teamRadar = svg.selectAll("g.teamRadar").data([teamDataset(teamRadarData)]);
+        teamRadar.enter().append("g").classed("teamRadar", 1);
+        teamRadar.attr("transform", "translate(0,0)").call(radarChart);
+        renderLengend(teamList);
+    //    document.getElementById("radar_chart_state").style.visibility = "visible";
+}
 
-    arc.append("path")
-        .attr("d", path)
-        .attr("fill", function(d) { return color(d.data.crimeType); });
+//Draw the lengend of the radar chart
+function renderLengend(teamList) {
+    var colorscale = d3.scale.category10();
 
-    arc.append("text")
-        .attr("transform", function(d) { return "translate(" + label.centroid(d) + ")"; })
-        .attr("dy", "0.35em")
-        .text(function(d) { return d.data.crimeType; });
+    //Initiate Legend
+    var svg = d3.select("#radar_chart_state");
+    var legend = svg.select(".teamRadar").selectAll("g.legend-tag").data(teamList).enter()
+        .append("g")
+        .attr("class", "legend-tag")
+        .attr("height", 100)
+        .attr("width", 200)
+        .attr("transform", "translate(0,350)") ;
 
-    document.getElementById("pie_chart").style.visibility = "visible";
+    //Create colour squares
+    legend.selectAll("rect").data(teamList).enter()
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", function(d, i){ return i * 20;})
+        .attr("width", 10)
+        .attr("height", 10)
+        .style("fill", function(d, i){ return colorscale(i);});
+
+    //Create text next to squares
+    legend.selectAll(".legend-team").data(teamList).enter()
+        .append("text")
+        .attr("class", "legend-team")
+        .attr("x", 12)
+        .attr("y", function(d, i){ return i * 20 + 9;})
+        .attr("font-size", "10px")
+        .attr("fill", "#737373")
+        .text(function(d) {  return state_view ? stateName[d] : countyName[d]; });
 }
 
 function populate_dashboard() {
@@ -583,9 +494,10 @@ function populate_dashboard() {
 		.dimension(year_dim)
 		.group(numMurdersYear)
 		.transitionDuration(500)
-		.x(d3.time.scale().domain([minYear, maxYear]))
+		.x(d3.scale.linear().domain([minYear, maxYear]))
 		.elasticY(true)
-		.xAxisLabel("Year")
+		/*.xAxisLabel("Year")*/
+		.yAxisLabel("Murders")
 		.yAxis().ticks(4);
 
 	weaponUsedChart
@@ -603,8 +515,8 @@ function populate_dashboard() {
 		.dimension(state_abbr_dim)
 		.group(totalMurdersByStates)
 		.colors(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"])
-//        .colors(["#E2F2FF", "#C4E4FF", "#0089FF", "#0061B5"])
-		.colorDomain([0, max_murders])
+		.colorDomain([max_murders*0.1, max_murders*0.2, max_murders*0.3, max_murders*0.4, max_murders*0.5,
+		                max_murders*0.6, max_murders*0.7, max_murders*0.8, max_murders*0.9, max_murders])
 		.overlayGeoJson(dcUs["features"], "state", function (d) {
 			return d.properties.name;
 		})
@@ -628,6 +540,28 @@ function populate_dashboard() {
 
     dc.renderAll();
 //    console.log("Tarun", "Rendering everything")
+
+    var sampleNumerical = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    var sampleThreshold = d3.scale.threshold().domain(sampleNumerical)
+                            .range(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"]);
+    var horizontalLegend = d3.svg.legend().units("").cellWidth(20).cellHeight(10).inputScale(sampleThreshold).cellStepping(0);
+//
+    usChart.svg().append("g").attr("class", "legend-dash").attr("transform", "translate(0,318)").call(horizontalLegend);
+
+    function addXAxis(chartToUpdate, displayText)
+    {
+        chartToUpdate.svg()
+                    .append("text")
+                    .attr("class", "x-axis-label")
+                    .attr("text-anchor", "middle")
+                    .attr("x", chartToUpdate.width()/2-20)
+                    .attr("y", chartToUpdate.height()-3)
+                    .text(displayText);
+    }
+
+    addXAxis(timeChart, "Year");
+    addXAxis(weaponUsedChart, "Murders");
+    addXAxis(usChart, "Distribution of Murders across United States");
 };
 
 
@@ -1207,31 +1141,40 @@ function populate_parallel() {
     }
 }
 
-function populate_bubble() {
-
-}
-
 function radioChange(){
     console.log('radio hit')
     state = document.getElementById('map_slide_state')
     county = document.getElementById('map_slide_county')
+    legend_state = document.getElementById('legend_area_state')
+    legend_county = document.getElementById('legend_area_county')
+     d3.selectAll(".teamRadar").remove();
+     teamRadarData = []
+     teamList= []
 
-    document.getElementById("pie_chart").style.visibility = "hidden";
+    for (var i = 0; i < selectedSVGList.length; i++) {
+        if (state_view) {
+            selectedSVGList[i].svg.style("fill", function(d){ return colorState(crimeByState[selectedSVGList[i].id])});
+        } else {
+            selectedSVGList[i].svg.style("fill", function(d){ return colorCounty(crimeByCounty[selectedSVGList[i].id])});
+        }
+    }
 
-    if(document.getElementById('state').checked){
+    selectedSVGList = [];
+
+    if(document.getElementById('state_btn').checked) {
         console.log('state checked')
+        state_view = true;
         state.style.display = 'block';
         county.style.display ='none';
-        d3.select(selectedCountySVG).style("fill", colorCounty(crimeByCounty[countySelected]));
-        countySelected = null;
-        selectedCountySVG = null;
+        legend_state.style.display = 'block';
+        legend_county.style.display = 'none';
     } else {
         console.log('county checked')
+        state_view = false;
         county.style.display = 'block';
         state.style.display = 'none';
-        d3.select(selectedCountySVG).style("fill", colorCounty(crimeByCounty[countySelected]));
-        stateSelected = null;
-        selectedStateSVG = null;
+        legend_county.style.display = 'block';
+        legend_state.style.display = 'none';
     }
 }
 

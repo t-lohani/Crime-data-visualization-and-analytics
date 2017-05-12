@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='lib/css/dc.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='lib/css/keen-dashboards.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='lib/css/d3.slider.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='lib/css/radar-chart.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for ('static', filename='css/style.css') }}">
 
     <title>CSE 564 Final Project</title>
@@ -19,7 +20,6 @@
       <button class="tablinks" onclick="openTabClick(event, 'pcamds_container', 3)" id="btn_pcamds">PCA/MDS</button>
       <button class="tablinks" onclick="openTabClick(event, 'slider_map_container', 4)" id="btn_mapview_slider">Map</button>
       <button class="tablinks" onclick="openTabClick(event, 'parallel_container', 5)" id="btn_parallel">Parallel Coordinates</button>
-      <button class="tablinks" onclick="openTabClick(event, 'bubble_container', 6)" id="btn_bubble">Bubble Chart</button>
     </div>
 
     <div class="tabcontent" id="dashboard_container">
@@ -116,20 +116,6 @@
             </div>
             <!-- Metric 2 -->
 
-            <!-- Race Row
-            <div class="col-sm-6">
-                <div class="chart-wrapper">
-                    <div class="chart-title">
-                        Victim Race
-                    </div>
-
-                    <div class="chart-stage">
-                        <div id="victim-race-row-chart"></div>
-                    </div>
-                </div>
-            </div>
-             Race Row -->
-
         </div>
 
     </div>
@@ -145,27 +131,18 @@
     </div>
 
     <div class="tabcontent" id="slider_map_container">
+        <svg class="legend_svg" id="legend_area_county" display="none"></svg>
+        <svg class="legend_svg" id="legend_area_state"></svg>
         <svg class="map_svg" id="map_slide_county" width="870" height="550" display="none"></svg>
         <svg class="map_svg" id="map_slide_state" width="870" height="550"></svg>
-        <svg class="pie_svg" id="pie_chart" width="300" height="300"></svg>
+        <svg class="radar_svg" id="radar_chart_state" width="300" height="500"></svg>
 
-        <fieldset style="transform: translate(-300px, 240px);">
-            <input type="radio" class="radio" name="maptype" onclick="radioChange()" value="state" id="state" checked />
-            <label for="state">State View</label>
-            <input type="radio" class="radio" name="maptype" onclick="radioChange()" value="county" id="county"  />
-            <label for="county">County View</label>
+        <fieldset style="transform: translate(-300px, 40px);">
+            <input type="radio" class="radio" name="maptype" onclick="radioChange()" value="state" id="state_btn" checked="checked" />
+            <label for="state_btn">State View</label>
+            <input type="radio" class="radio" name="maptype" onclick="radioChange()" value="county" id="county_btn"  />
+            <label for="county_btn">County View</label>
         </fieldset>
-    </div>
-
-    <div class="slider_container" id="slider_div">
-        <div class="slider" id="slider1"></div>
-        <div class="slider" id="slider2"></div>
-        <div class="slider" id="slider3"></div>
-        <div class="slider" id="slider4"></div>
-        <div class="slider" id="slider5"></div>
-        <div class="slider" id="slider6"></div>
-        <div class="slider" id="slider7"></div>
-        <div class="slider" id="slider8"></div>
     </div>
 
     <div class="tabcontent" id="parallel_container">
@@ -185,6 +162,8 @@
     <script src="{{ url_for('static', filename='lib/js/dc.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/js/queue.js') }}"></script>
     <script src="{{ url_for('static', filename='lib/js/keen.min.js') }}"></script>
+	<script src="{{ url_for('static', filename='lib/js/legend.js') }}"></script>
+    <script src="{{ url_for('static', filename='lib/js/radar.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
 
 </body>
