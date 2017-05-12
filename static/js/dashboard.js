@@ -72,7 +72,7 @@ queue()
     .defer(d3.json, "/get_squareloadings")
     .defer(d3.json, "/get_eigen_values")
     .defer(d3.json, "/pca_analysis")
-    .defer(d3.json, "/pca_analysis")
+    .defer(d3.json, "/mds_analysis")
     .defer(d3.json, "/crime_db/crime_report")
     .defer(d3.json, "static/geojson/us-states.json")
     .defer(d3.json, "/crime_db/crime_data_state")
@@ -91,7 +91,7 @@ function initData(error, squareLoadingsJson, eigenValuesJson, pcaDataJson, mdsDa
     squareLoadings = squareLoadingsJson
     eigenValues = eigenValuesJson
     pcaData = pcaDataJson
-    mdsData = pcaDataJson
+    mdsData = mdsDataJson
 
 	crimeReportData = crimeReportJson
 	crimeDataState = crimeDataStateJson
@@ -1357,6 +1357,21 @@ function populate_stack() {
 
 function populate_bubble() {
 
+}
+
+function radioChange(){
+    console.log('radio hit')
+    state = document.getElementById('map_slide_state')
+    county = document.getElementById('map_slide_county')
+    if(document.getElementById('state').checked){
+        console.log('state checked')
+        state.style.visibility = 'visible';
+        county.style.visibility ='hidden';
+     }else{
+        console.log('county checked')
+        county.style.visibility = 'visible';
+        state.style.visibility = 'hidden';
+      }
 }
 
 function openTabClick(evt, container, index) {
